@@ -65,8 +65,8 @@ Aoe-Tunnel 是一套**主控 + Agent 分离部署**的中转隧道管理系统�
 
 | 能力 | 说明 |
 | --- | --- |
-| 🚀 自研隧道 | 主链路 QUIC，TLS over TCP 降级通道，隧道内 Yamux 多路复用 |
-| 🛡️ 指纹伪装 | 基于 utls 模拟 Chrome ClientHello，ALPN 改写为私有值 `aoe-tunnel-v1` / `aoe-tunnel-fallback-v1` |
+| 🚀 自研隧道 | 主链路 QUIC，TLS over TCP 降级通道，隧道内 Yamux 多路复用 nyanpass 只支持直连入口→出口，没有原生串联转发；Aoe-tunnel 支持 `chain_node_ids` 链路编排，节点变更自动热推送规则，链路自动刷新；UDP 无 TCP 固有重传延迟惩罚；跨地域中转、高延迟链路下吞吐、延迟表现普遍优于 TCP WebSocket。nypass 的 WS 完全受制于 TCP 拥塞控制；Aoe-tunnel 采用 uQUIC 作为主转发协议，支持每次握手 Transport Parameter 随机化，规避指纹识别；QUIC 原生多路复用消除 TCP 队头阻塞，弱网 / 跨地域转发延迟抖动更小；支持连接迁移、DATAGRAM，天然适配最多 8 跳链式多级中转；UDP 受限环境可降级 TLS+yamux，多协议兜底 |
+| 🛡️ 指纹伪装 | 基于 utls 模拟 Chrome ClientHello，ALPN 改写为私有值 `aoe-tunnel-v1` / `aoe-tunnel-fallback-v1` nyanpass 的 WS/TLS 指纹是固定特征，容易被识别；Aoe-tunnel 每次握手随机 QUIC TP 参数，规避 QUIC 指纹识别，隐蔽等级更高。|
 | 🔀 控制面分离 | 主控只传信令（MQTT over TLS → EMQX），数据面 QUIC/TLS 分离，面板不转发流量 |
 | 💰 计费体系 | 套餐绑定节点、计费比（ratio_up / ratio_down）下沉 Agent 聚合、易支付、分销返佣 |
 | 📊 实时监控 | 1s 聚合上报，内存 60 点时序缓存，入口 / 出口分组展示 |
