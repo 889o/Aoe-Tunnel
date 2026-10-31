@@ -79,6 +79,21 @@ Aoe-Tunnel 是一套**主控 + Agent 分离部署**的中转隧道管理系统�
 ```
   curl -fsSL https://tunzzzz7.oss-cn-hongkong.aliyuncs.com/install-panel.sh | sudo bash -s -- --domain 把这段中文换成你已经解析的域名
 ```
+## 功能预览
+<img width="1917" height="959" alt="登录页" src="https://github.com/user-attachments/assets/df51960c-d82d-4e62-9cf7-a302f9f93d43" />
+<img width="1918" height="960" alt="转发规则页" src="https://github.com/user-attachments/assets/e3f6ff7b-a63a-4fa7-b9fd-e91bf9375543" />
+<img width="1918" height="958" alt="支付页" src="https://github.com/user-attachments/assets/153553c5-f10c-4937-b811-edebf784a7e6" />
+<img width="1918" height="960" alt="用户页" src="https://github.com/user-attachments/assets/77893c11-7fcf-41b5-85f5-90daab8d3911" />
+<img width="1920" height="961" alt="易支付配置" src="https://github.com/user-attachments/assets/63cb0551-7cf3-4504-b26f-e792d5f77bf8" />
+<img width="1915" height="967" alt="套餐页" src="https://github.com/user-attachments/assets/4c2fe53e-764d-4169-a7a1-ad37292e28b4" />
+<img width="1919" height="963" alt="设置" src="https://github.com/user-attachments/assets/a024af18-7ba8-4d61-b116-945f751df0b2" />
+<img width="1920" height="958" alt="钱包购买页" src="https://github.com/user-attachments/assets/112f5137-91a7-450f-a73a-84d7c16d4db6" />
+<img width="1920" height="959" alt="节点页" src="https://github.com/user-attachments/assets/21fba2ca-bb24-4ed8-bd03-f2713505dbaf" />
+<img width="1917" height="958" alt="监控" src="https://github.com/user-attachments/assets/6155efe5-f2f5-4bc8-8a48-dbd4e1c39eb2" />
+<img width="1920" height="958" alt="分销设置" src="https://github.com/user-attachments/assets/0e410289-f11d-4598-94d8-b9e86b1c6727" />
+<img width="1920" height="964" alt="分销" src="https://github.com/user-attachments/assets/4ed91627-88eb-4326-80f0-69140d054b36" />
+
+
 ## 系统架构
 
 ```
