@@ -75,7 +75,8 @@ Aoe-Tunnel 是一套**主控 + Agent 分离部署**的中转隧道管理系统�
 | ⚡ 多出口轮询 | 套餐绑定多出口，就绪隧道池轮询调度流量 |
 
 ---
-```如果你不想用源代码 那你可以使用以下命令一键安装 无需安装环境 纯净服务器自动部署
+如果你不想用源代码 那你可以使用以下命令一键安装 无需安装环境 纯净服务器自动部署
+```
   curl -fsSL https://tunzzzz7.oss-cn-hongkong.aliyuncs.com/install-panel.sh | sudo bash -s -- --domain 把这段中文换成你已经解析的域名
 ```
 ## 系统架构
