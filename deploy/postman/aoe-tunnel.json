@@ -1,0 +1,183 @@
+{
+  "info": {
+    "name": "Aoe-tunnel Panel API",
+    "_postman_id": "a0e7c1d2-5b3a-4f2e-9c81-7b6f0d3a1e55",
+    "description": "Aoe-tunnel 控制面板 REST API（首期鉴权：X-API-Key）。所有接口统一返回 {code,message,data}。",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "apikey",
+    "apikey": [
+      { "key": "key", "value": "X-API-Key", "type": "string" },
+      { "key": "value", "value": "{{apiKey}}", "type": "string" },
+      { "key": "in", "value": "header", "type": "string" }
+    ]
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://127.0.0.1:18080", "type": "string" },
+    { "key": "apiKey", "value": "change-me-please", "type": "string" },
+    { "key": "nodeCode", "value": "n-entry", "type": "string" },
+    { "key": "targetNodeCode", "value": "n-exit", "type": "string" },
+    { "key": "ruleId", "value": "1", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Nodes",
+      "description": "节点注册与查询。quic_addr/tls_addr 由 Agent 上报或管理员填写，规则下发时携带出口节点地址。",
+      "item": [
+        {
+          "name": "创建节点",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"{{nodeCode}}\",\n  \"name\": \"入口节点\",\n  \"quic_addr\": \"127.0.0.1:9543\",\n  \"tls_addr\": \"127.0.0.1:9544\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/nodes", "host": ["{{baseUrl}}"], "path": ["api", "v1", "nodes"] },
+            "description": "创建一个节点。code 唯一，冲突返回 409。"
+          }
+        },
+        {
+          "name": "节点列表",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/v1/nodes", "host": ["{{baseUrl}}"], "path": ["api", "v1", "nodes"] },
+            "description": "返回全部节点（含 online 状态与 last_seen_at）。"
+          }
+        },
+        {
+          "name": "更新节点地址",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quic_addr\": \"127.0.0.1:9543\",\n  \"tls_addr\": \"127.0.0.1:9544\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/nodes/{{nodeCode}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "nodes", "{{nodeCode}}"]
+            },
+            "description": "修改节点名称或数据面地址。注意：修改地址后需触发相关规则 revision 变化（PATCH 规则）才会重新下发到 Agent。"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Port Rules",
+      "description": "端口规则 CRUD。创建/更新/删除会通过 MQTT 下发 port.add / port.update / port.remove。",
+      "item": [
+        {
+          "name": "创建端口规则",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"tcp-demo\",\n  \"entry_node\": \"{{nodeCode}}\",\n  \"exit_node\": \"{{targetNodeCode}}\",\n  \"protocol\": \"tcp\",\n  \"listen_port\": 20001,\n  \"target_addr\": \"127.0.0.1:19093\",\n  \"ratio_up\": 1,\n  \"ratio_down\": 1,\n  \"rate_up_bps\": 0,\n  \"rate_down_bps\": 0,\n  \"quota_bytes\": 0,\n  \"enabled\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/port-rules",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "port-rules"]
+            },
+            "description": "exit_node 省略时默认与 entry_node 相同（单机 self-exit）。rate_*_bps=0 表示不限速，quota_bytes=0 表示不限额。"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "if (body.data && body.data.id) { pm.collectionVariables.set('ruleId', body.data.id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "规则列表",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/port-rules?entry_node={{nodeCode}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "port-rules"],
+              "query": [{ "key": "entry_node", "value": "{{nodeCode}}", "description": "可选，按入口节点过滤" }]
+            },
+            "description": "列出端口规则，可按 entry_node 过滤。"
+          }
+        },
+        {
+          "name": "规则详情",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/port-rules/{{ruleId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "port-rules", "{{ruleId}}"]
+            }
+          }
+        },
+        {
+          "name": "更新规则（改限速/配额/目标）",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"target_addr\": \"127.0.0.1:19093\",\n  \"rate_down_bps\": 524288,\n  \"quota_bytes\": 104857600,\n  \"enabled\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/port-rules/{{ruleId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "port-rules", "{{ruleId}}"]
+            },
+            "description": "仅传需要修改的字段；每次更新 revision+1 并下发 port.update。"
+          }
+        },
+        {
+          "name": "删除规则",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/port-rules/{{ruleId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "port-rules", "{{ruleId}}"]
+            },
+            "description": "删除后下发 port.remove，Agent 关闭监听并清理 bbolt。"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Stats",
+      "item": [
+        {
+          "name": "规则流量统计",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/port-rules/{{ruleId}}/stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "port-rules", "{{ruleId}}", "stats"],
+              "query": [
+                { "key": "from", "value": "", "description": "可选，RFC3339，默认 now-24h", "disabled": true },
+                { "key": "to", "value": "", "description": "可选，RFC3339，默认 now", "disabled": true }
+              ]
+            },
+            "description": "返回时间窗口内的流量增量记录（up_bytes/down_bytes/bill_bytes）与汇总。"
+          }
+        }
+      ]
+    }
+  ]
+}

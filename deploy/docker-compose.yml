@@ -1,0 +1,61 @@
+name: aoe-tunnel
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: aoe-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-aoeRoot2026}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-aoe_tunnel}
+      MYSQL_USER: ${MYSQL_USER:-aoe}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-aoePass2026}
+      TZ: Asia/Shanghai
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+    ports:
+      - "${AOE_MYSQL_PORT:-3306}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  emqx:
+    image: emqx:5.8
+    container_name: aoe-emqx
+    restart: unless-stopped
+    environment:
+      EMQX_DASHBOARD__DEFAULT_PASSWORD: ${EMQX_DASHBOARD_PASSWORD:-aoeAdmin2026}
+      EMQX_LISTENERS__TCP__DEFAULT__BIND: 0.0.0.0:1883
+      EMQX_LISTENERS__SSL__DEFAULT__ENABLE: "true"
+      EMQX_LISTENERS__SSL__DEFAULT__BIND: 0.0.0.0:8883
+      EMQX_LISTENERS__SSL__DEFAULT__SSL_OPTIONS__CERTFILE: /opt/emqx/etc/certs/server.crt
+      EMQX_LISTENERS__SSL__DEFAULT__SSL_OPTIONS__KEYFILE: /opt/emqx/etc/certs/server.key
+      EMQX_LISTENERS__SSL__DEFAULT__SSL_OPTIONS__CACERTFILE: /opt/emqx/etc/certs/ca.crt
+      EMQX_LISTENERS__SSL__DEFAULT__SSL_OPTIONS__VERIFY: verify_none
+    ports:
+      - "${AOE_MQTT_PORT:-1883}:1883"
+      - "${AOE_MQTTS_PORT:-8883}:8883"
+      - "${AOE_EMQX_DASHBOARD_PORT:-18083}:18083"
+    volumes:
+      - ./certs:/opt/emqx/etc/certs:ro
+      - emqx_data:/opt/emqx/data
+      - emqx_log:/opt/emqx/log
+    depends_on:
+      mysql:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "emqx", "ctl", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  mysql_data:
+  emqx_data:
+  emqx_log:
